@@ -1,4 +1,4 @@
-# working-hour-system-fe
+# working-hour-system-qrcode-generator
 
 npm version: v20.10.0  
 npx version: 10.2.3
@@ -18,7 +18,7 @@ const router = createBrowserRouter(
       element: <TimeCard />,
     },
   ],
-  { basename: "/working-hour-system-fe" }
+  { basename: "/working-hour-system-qrcode-generator" }
 );
 ```
 
