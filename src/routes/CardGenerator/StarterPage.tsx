@@ -317,7 +317,7 @@ export function StarterPage(props: {
             key={index}
             direction="vertical"
           >
-            <QRCode value={url} size={200} color={"#1a4499"} />
+            <QRCode value={url} size={160} color={"#1a4499"} />
           </Space>
         ))}
       </div>
