@@ -69,6 +69,7 @@ function CardGenerator() {
             exitLoading={exitLoading}
             members={members}
             setMembers={setMembers}
+            cardType={cardType}
             setCardType={setCardType}
             setCurPage={setCurPage}
           />

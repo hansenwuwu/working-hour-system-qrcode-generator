@@ -3,8 +3,18 @@ import { Button, Input, QRCode, Space } from "antd";
 import { getTasks, getMembers } from "../../lib/api";
 import { MemberData, ProjectData, TaskData } from "../../lib/models";
 import cardTemplate from "../../assets/images/card.jpg";
+import projectCardTemplate from "../../assets/images/project_card.jpg";
 import JSZip from "jszip";
 import { addQueryParamsToUrl } from "./model";
+import { drawWrappedText, projectCardInfo, CardTemplateInfo } from "./utils";
+import {
+  uniquePairs,
+  TIMECARD_URL,
+  CARD_WIDTH,
+  CARD_LINE_HEIGHT,
+} from "./utils";
+
+const CHUNK_SIZE = 10;
 
 const rowDiffY = 700;
 const projectY = 180;
@@ -69,36 +79,21 @@ const projectPos = [
     name: { x: 740, y: nameY + rowDiffY },
     qrcode: { x: 740, y: qrcodeY + rowDiffY },
   },
+  {
+    project: { x: 740, y: projectY + rowDiffY },
+    milestone: { x: 740, y: milestoneY + rowDiffY },
+    userid: { x: 740, y: useridY + rowDiffY },
+    name: { x: 740, y: nameY + rowDiffY },
+    qrcode: { x: 740, y: qrcodeY + rowDiffY },
+  },
+  {
+    project: { x: 740, y: projectY + rowDiffY },
+    milestone: { x: 740, y: milestoneY + rowDiffY },
+    userid: { x: 740, y: useridY + rowDiffY },
+    name: { x: 740, y: nameY + rowDiffY },
+    qrcode: { x: 740, y: qrcodeY + rowDiffY },
+  },
 ];
-
-function drawWrappedText(
-  ctx: CanvasRenderingContext2D,
-  text: string,
-  x: number,
-  y: number,
-  maxWidth: number,
-  lineHeight: number
-) {
-  let words = text.split(" ");
-  let line = "";
-  let yPosition = y;
-
-  for (let i = 0; i < words.length; i++) {
-    let testLine = line + words[i] + " ";
-    let metrics = ctx.measureText(testLine);
-    let testWidth = metrics.width;
-
-    if (testWidth > maxWidth && i > 0) {
-      ctx.fillText(line, x, yPosition);
-      line = words[i] + " ";
-      yPosition += lineHeight;
-    } else {
-      line = testLine;
-    }
-  }
-
-  ctx.fillText(line, x, yPosition);
-}
 
 export function StarterPage(props: {
   sheetId: string;
@@ -110,120 +105,126 @@ export function StarterPage(props: {
   exitLoading: CallableFunction;
   members: MemberData[];
   setMembers: CallableFunction;
+  cardType: string;
   setCardType: CallableFunction;
   setCurPage: CallableFunction;
 }) {
   const [cardInfo, setCardInfo] = useState<TaskData[]>([]);
-
   const [downloadLink, setDownloadLink] = useState<string | null>(null);
-
   const [downloadLinks, setDownloadLinks] = useState<string[]>([]);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // data url for each QRCode
+  const [qrCodeUrls, setQrCodeUrls] = useState<string[]>([]);
 
-  const [urls, setUrls] = useState<string[]>([]);
-
-  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const loadBgImage = (imgSrc: any) => {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      // TODO switch between project/dep card
+      image.src = imgSrc;
+      image.onload = async () => {
+        resolve(image);
+      };
+    });
+  };
 
   const generateImageWithText = (
     tasks: TaskData[],
     qrCodeUrls: any
   ): Promise<string> => {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
 
       if (!ctx) return;
 
-      const image = new Image();
-      image.src = cardTemplate;
+      // Decide which card info to use
+      const cardTemplateInfo: CardTemplateInfo = projectCardInfo;
+      if (cardTemplateInfo.project === undefined) {
+        return;
+      }
 
-      image.onload = async () => {
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0);
+      const bgImage: any = await loadBgImage(cardTemplateInfo.backgroundImage);
+      canvas.width = bgImage.width;
+      canvas.height = bgImage.height;
+      ctx.drawImage(bgImage, 0, 0);
 
-        for (let i = 0; i < tasks.length; i += 1) {
-          const foundMember = props.members.find(
-            (member) => member.englishName === tasks[i].member
-          );
+      const projectName = props.projectData?.project || "";
 
-          ctx.font = "24px Arial";
-          ctx.fillStyle = "green";
+      for (let i = 0; i < tasks.length; i += 1) {
+        const foundMember = props.members.find(
+          (member) => member.englishName === tasks[i].member
+        );
 
-          if (props.projectData) {
-            drawWrappedText(
-              ctx,
-              props.projectData.project,
-              projectPos[i].project.x,
-              projectPos[i].project.y,
-              300,
-              30
-            );
-          }
+        ctx.font = "55px Arial";
+        ctx.fillStyle = "#FFFFFF";
 
+        try {
           drawWrappedText(
             ctx,
-            "very long long long long milestone",
-            projectPos[i].milestone.x,
-            projectPos[i].milestone.y,
-            300,
-            30
+            projectName,
+            cardTemplateInfo.project[i].x,
+            cardTemplateInfo.project[i].y,
+            CARD_WIDTH,
+            CARD_LINE_HEIGHT
           );
+        } catch (err) {
+          console.log(err);
+        }
 
-          if (foundMember) {
-            drawWrappedText(
-              ctx,
-              foundMember.jobNumber,
-              projectPos[i].userid.x,
-              projectPos[i].userid.y,
-              300,
-              30
-            );
-          }
+        if (cardTemplateInfo.milestone !== undefined) {
+          drawWrappedText(
+            ctx,
+            tasks[i].type,
+            cardTemplateInfo.milestone[i].x,
+            cardTemplateInfo.milestone[i].y,
+            CARD_WIDTH,
+            CARD_LINE_HEIGHT
+          );
+        }
 
+        if (cardTemplateInfo.userId !== undefined && foundMember) {
+          drawWrappedText(
+            ctx,
+            foundMember.jobNumber,
+            cardTemplateInfo.userId[i].x,
+            cardTemplateInfo.userId[i].y,
+            CARD_WIDTH,
+            CARD_LINE_HEIGHT
+          );
+        }
+
+        if (cardTemplateInfo.name !== undefined) {
           drawWrappedText(
             ctx,
             `${tasks[i].member}`,
-            projectPos[i].name.x,
-            projectPos[i].name.y,
-            300,
-            30
+            cardTemplateInfo.name[i].x,
+            cardTemplateInfo.name[i].y,
+            CARD_WIDTH,
+            CARD_LINE_HEIGHT
           );
         }
+      }
 
-        let loadcount = 0;
-        for (let i = 0; i < tasks.length; i++) {
-          const qrCodeImage = new Image();
-          qrCodeImage.src = qrCodeUrls[i];
-          qrCodeImage.onload = async () => {
-            loadcount++;
+      let loadcount = 0;
+      for (let i = 0; i < tasks.length; i++) {
+        const qrCodeImage = new Image();
+        qrCodeImage.src = qrCodeUrls[i];
+        qrCodeImage.onload = async () => {
+          loadcount++;
 
+          if (cardTemplateInfo.qrCode !== undefined) {
             ctx.drawImage(
               qrCodeImage,
-              projectPos[i].qrcode.x,
-              projectPos[i].qrcode.y
+              cardTemplateInfo.qrCode[i].x,
+              cardTemplateInfo.qrCode[i].y
             );
+          }
 
-            if (loadcount == tasks.length) {
-              const dataUrl = canvas.toDataURL("image/png");
-              resolve(dataUrl);
-            }
-          };
-        }
-      };
-    });
-  };
-
-  const uniquePairs = (list: TaskData[]): TaskData[] => {
-    const seen = new Set<string>();
-    return list.filter((pair) => {
-      const key = `${pair.member}-${pair.type}`;
-      if (seen.has(key)) {
-        return false;
-      } else {
-        seen.add(key);
-        return true;
+          if (loadcount == tasks.length) {
+            const dataUrl = canvas.toDataURL("image/png");
+            resolve(dataUrl);
+          }
+        };
       }
     });
   };
@@ -239,6 +240,7 @@ export function StarterPage(props: {
         props.setProjectData(projectData);
         props.setCardType(projectData.cardType);
 
+        // Get unique user and milestone pair
         setCardInfo(
           uniquePairs(projectData.tasks).sort((a, b) => {
             if (a.member < b.member) return -1;
@@ -248,8 +250,6 @@ export function StarterPage(props: {
             return 0;
           })
         );
-
-        // props.setCurPage(PageType.GENERATOR);
       } catch (error) {
         console.error("Error:", error);
       }
@@ -258,55 +258,68 @@ export function StarterPage(props: {
     fetchData();
   };
 
+  // Get from generate button
   useEffect(() => {
-    setUrls(
+    if (
+      props.projectData === undefined ||
+      cardInfo.length === 0 ||
+      props.cardType === ""
+    ) {
+      return;
+    }
+    setQrCodeUrls(
       cardInfo.map((info) => {
         const foundMember = props.members.find(
           (member) => member.englishName === info.member
         );
-        const url = "https://hansenwuwu.github.io/working-hour-system-fe";
-        const queryParams = {
+        return addQueryParamsToUrl(TIMECARD_URL, {
           id: props.sheetId,
           user: foundMember?.jobNumber || "",
           milestone: info.type,
-        };
-        const updatedUrl = addQueryParamsToUrl(url, queryParams);
-        return updatedUrl;
+        });
       })
     );
-  }, [cardInfo]);
+  }, [cardInfo, props.projectData]);
 
   useEffect(() => {
-    const qrUrls: string[] = [];
-    for (let i = 0; i < urls.length; i++) {
+    if (props.projectData === undefined) {
+      return;
+    }
+
+    const qrCodeDataUrls: string[] = [];
+
+    for (let i = 0; i < qrCodeUrls.length; i++) {
       const canvas = document
         .getElementById(`qrcode-${i}`)
         ?.querySelector<HTMLCanvasElement>("canvas");
       if (canvas) {
-        const qrUrl = canvas.toDataURL("image/png");
-        qrUrls.push(qrUrl);
+        qrCodeDataUrls.push(canvas.toDataURL("image/png"));
       }
     }
 
-    const fetchData = async (qrUrls: any) => {
+    const fetchData = async (qrCodeDataUrls: string[]) => {
       const links: string[] = [];
       const zip = new JSZip();
-      const chunkSize = 8;
-      const chunkedLists: any[][] = [];
-      const chunkedUrls: any[][] = [];
-      for (let i = 0; i < cardInfo.length; i += chunkSize) {
-        const chunk = cardInfo.slice(i, i + chunkSize);
-        const urlChunk = qrUrls.slice(i, i + chunkSize);
-        chunkedLists.push(chunk);
-        chunkedUrls.push(urlChunk);
+
+      const chunkedCardInfos: any[][] = [];
+      const chunkedQrcodeUrls: any[][] = [];
+
+      for (let i = 0; i < cardInfo.length; i += CHUNK_SIZE) {
+        chunkedCardInfos.push(cardInfo.slice(i, i + CHUNK_SIZE));
+        chunkedQrcodeUrls.push(qrCodeDataUrls.slice(i, i + CHUNK_SIZE));
       }
-      for (let i = 0; i < chunkedLists.length; i++) {
+
+      for (let i = 0; i < chunkedCardInfos.length; i++) {
         const dataUrl = await generateImageWithText(
-          chunkedLists[i],
-          chunkedUrls[i]
+          chunkedCardInfos[i],
+          chunkedQrcodeUrls[i]
         );
         const base64Data = dataUrl.split(",")[1];
-        zip.file(`image_${i + 1}.png`, base64Data, { base64: true });
+        zip.file(
+          `${props.projectData?.project}_timecard_${i + 1}.png`,
+          base64Data,
+          { base64: true }
+        );
         links.push(dataUrl);
       }
       zip.generateAsync({ type: "blob" }).then((content) => {
@@ -316,8 +329,8 @@ export function StarterPage(props: {
       setDownloadLinks(links);
     };
 
-    fetchData(qrUrls);
-  }, [urls]);
+    fetchData(qrCodeDataUrls);
+  }, [qrCodeUrls, props.projectData]);
 
   return (
     <div
@@ -362,22 +375,22 @@ export function StarterPage(props: {
             getProjectData(props.sheetId);
           }}
         >
-          Process
+          Generate
         </Button>
-        {urls.map((url, index) => (
+        {qrCodeUrls.map((url, index) => (
           <Space
             style={{ display: "none" }}
             id={`qrcode-${index}`}
             key={index}
             direction="vertical"
           >
-            <QRCode value={url} size={120} />
+            <QRCode value={url} size={200} color={"#1a4499"} />
           </Space>
         ))}
       </div>
       <div
         style={{
-          width: "1200px",
+          // width: "1200px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
@@ -385,33 +398,55 @@ export function StarterPage(props: {
           marginTop: "200px",
         }}
       >
-        <div style={{ width: "100%" }}>
-          {downloadLink && (
-            <a href={downloadLink} download="images.zip">
-              Download All Image
-            </a>
-          )}
-        </div>
+        {downloadLink && (
+          <a
+            href={downloadLink}
+            download={`timecards.zip`}
+            target="_blank"
+            style={{ marginBottom: "50px" }}
+          >
+            <Button
+              style={{
+                marginTop: "20px",
+                width: "300px",
+                height: "60px",
+                fontSize: "30px",
+                backgroundColor: "green",
+              }}
+              type="primary"
+            >
+              Download all cards
+            </Button>
+          </a>
+        )}
 
         {downloadLinks.map((url, index) => (
-          <div
-            key={index}
-            style={{ margin: "10px", textAlign: "center", width: "100%" }}
-          >
+          <div key={index} style={{ textAlign: "center", width: "100%" }}>
+            <div>
+              <a
+                href={downloadLinks[index]}
+                download={`timecard_${index + 1}.png`}
+                style={{ width: "100%" }}
+                target="_blank"
+              >
+                <Button
+                  style={{
+                    marginTop: "20px",
+                    width: "300px",
+                    height: "60px",
+                    fontSize: "30px",
+                  }}
+                  type="primary"
+                >
+                  Download card {index + 1}
+                </Button>
+              </a>
+            </div>
             <img
               src={url}
               alt={`Image Preview ${index + 1}`}
               style={{ width: "100%" }}
             />
-            <div>
-              <a
-                href={downloadLinks[index]}
-                download={`image_with_text_${index + 1}.png`}
-                style={{ width: "100%" }}
-              >
-                Download Image {index + 1}
-              </a>
-            </div>
           </div>
         ))}
       </div>
