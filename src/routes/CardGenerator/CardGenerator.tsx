@@ -62,10 +62,12 @@ function CardGenerator() {
           <StarterPage
             sheetId={sheetId}
             setSheetId={setSheetId}
+            projectData={projectData}
             setProjectData={setProjectData}
             loadings={loadings}
             enterLoading={enterLoading}
             exitLoading={exitLoading}
+            members={members}
             setMembers={setMembers}
             setCardType={setCardType}
             setCurPage={setCurPage}
