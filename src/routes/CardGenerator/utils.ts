@@ -1,5 +1,12 @@
 import { TaskData } from "../../lib/models";
 import projectCardTemplate from "../../assets/images/project_card.jpg";
+import designCardTemplate from "../../assets/images/design_dep_card.jpg";
+import adminCardTemplate from "../../assets/images/admin_dep_card.jpg";
+import engineerCardTemplate from "../../assets/images/engineer_dep_card.jpg";
+import marketingCardTemplate from "../../assets/images/marketing_dep_card.jpg";
+import misCardTemplate from "../../assets/images/mis_dep_card.jpg";
+import operationCardTemplate from "../../assets/images/operation_dep_card.jpg";
+import salesCardTemplate from "../../assets/images/sales_dep_card.jpg";
 
 export const TIMECARD_URL =
   "https://hansenwuwu.github.io/working-hour-system-fe";
@@ -61,6 +68,7 @@ export interface CardTemplateInfo {
   userId: Pos[];
   name: Pos[];
   qrCode: Pos[];
+  fontColor: string;
 }
 
 const generateCombinations = (rows: number[], cols: number[]): Pos[] => {
@@ -76,15 +84,90 @@ const generateCombinations = (rows: number[], cols: number[]): Pos[] => {
   return combinations;
 };
 
+function generateArray(
+  initialValue: number,
+  diff: number,
+  count: number
+): number[] {
+  const result: number[] = [];
+  for (let i = 0; i < count; i++) {
+    result.push(initialValue + i * diff);
+  }
+  return result;
+}
+
 export const projectCardInfo: CardTemplateInfo = {
   backgroundImage: projectCardTemplate,
-  project: generateCombinations([200, 840, 1480, 2120, 2760], [340, 1400]),
-  milestone: generateCombinations([200, 840, 1480, 2120, 2760], [420, 1480]),
-  userId: generateCombinations([200, 840, 1480, 2120, 2760], [620, 1680]),
-  name: generateCombinations([200, 840, 1480, 2120, 2760], [700, 1760]),
-  qrCode: generateCombinations([330, 970, 1610, 2250, 2890], [800, 1860]),
+  project: generateCombinations(
+    generateArray(200, 640, 5),
+    generateArray(340, 1060, 2)
+  ),
+
+  milestone: generateCombinations(
+    generateArray(200, 640, 5),
+    generateArray(420, 1060, 2)
+  ),
+  userId: generateCombinations(
+    generateArray(200, 640, 5),
+    generateArray(620, 1060, 2)
+  ),
+  name: generateCombinations(
+    generateArray(200, 640, 5),
+    generateArray(700, 1060, 2)
+  ),
+  qrCode: generateCombinations(
+    generateArray(330, 640, 5),
+    generateArray(800, 1060, 2)
+  ),
+  fontColor: "#FFFFFF",
 };
 
-// export const depCardInfo: CardTemplateInfo = {
-//   backgroundImage: projectCardTemplate,
-// };
+const depCardUserIdPos = generateCombinations(
+  generateArray(480, 640, 5),
+  generateArray(620, 1060, 2)
+);
+const depCardNamePos = generateCombinations(
+  generateArray(480, 640, 5),
+  generateArray(700, 1060, 2)
+);
+const depCardQRCodeIdPos = generateCombinations(
+  generateArray(325, 640, 5),
+  generateArray(820, 1060, 2)
+);
+const depCardFontColor = "#1a4499";
+
+export const designCardInfo: CardTemplateInfo = {
+  backgroundImage: designCardTemplate,
+  userId: depCardUserIdPos,
+  name: depCardNamePos,
+  qrCode: depCardQRCodeIdPos,
+  fontColor: depCardFontColor,
+};
+
+export const getBackgroundImage = (dep: string) => {
+  dep = dep.toLowerCase();
+
+  if (dep === "admin") {
+    return adminCardTemplate;
+  }
+  if (dep === "design") {
+    return designCardInfo;
+  }
+  if (dep === "engineer") {
+    return engineerCardTemplate;
+  }
+  if (dep === "marketing") {
+    return marketingCardTemplate;
+  }
+  if (dep === "mis") {
+    return misCardTemplate;
+  }
+  if (dep === "operation") {
+    return operationCardTemplate;
+  }
+  if (dep === "sales") {
+    return salesCardTemplate;
+  }
+  // Engineer the best
+  return engineerCardTemplate;
+};

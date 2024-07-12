@@ -16,8 +16,8 @@ const router = createBrowserRouter(
       path: "/",
       element: <CardGenerator />,
     },
-  ]
-  // { basename: "/working-hour-system-qrcode-generator" }
+  ],
+  { basename: "/working-hour-system-qrcode-generator" }
 );
 
 const root = ReactDOM.createRoot(

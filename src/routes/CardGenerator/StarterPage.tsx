@@ -2,11 +2,15 @@ import React, { useState, useRef, useEffect } from "react";
 import { Button, Input, QRCode, Space } from "antd";
 import { getTasks, getMembers } from "../../lib/api";
 import { MemberData, ProjectData, TaskData } from "../../lib/models";
-import cardTemplate from "../../assets/images/card.jpg";
-import projectCardTemplate from "../../assets/images/project_card.jpg";
 import JSZip from "jszip";
 import { addQueryParamsToUrl } from "./model";
-import { drawWrappedText, projectCardInfo, CardTemplateInfo } from "./utils";
+import {
+  drawWrappedText,
+  projectCardInfo,
+  CardTemplateInfo,
+  designCardInfo,
+  getBackgroundImage,
+} from "./utils";
 import {
   uniquePairs,
   TIMECARD_URL,
@@ -15,85 +19,6 @@ import {
 } from "./utils";
 
 const CHUNK_SIZE = 10;
-
-const rowDiffY = 700;
-const projectY = 180;
-const milestoneY = 220;
-const useridY = 300;
-const nameY = 340;
-const qrcodeY = 390;
-const projectPos = [
-  {
-    project: { x: 100, y: projectY },
-    milestone: { x: 100, y: milestoneY },
-    userid: { x: 100, y: useridY },
-    name: { x: 100, y: nameY },
-    qrcode: { x: 140, y: qrcodeY },
-  },
-  {
-    project: { x: 420, y: projectY },
-    milestone: { x: 420, y: milestoneY },
-    userid: { x: 420, y: useridY },
-    name: { x: 420, y: nameY },
-    qrcode: { x: 420, y: qrcodeY },
-  },
-  {
-    project: { x: 740, y: projectY },
-    milestone: { x: 740, y: milestoneY },
-    userid: { x: 740, y: useridY },
-    name: { x: 740, y: nameY },
-    qrcode: { x: 740, y: qrcodeY },
-  },
-  {
-    project: { x: 1060, y: projectY },
-    milestone: { x: 1060, y: milestoneY },
-    userid: { x: 1060, y: useridY },
-    name: { x: 1060, y: nameY },
-    qrcode: { x: 1060, y: qrcodeY },
-  },
-  {
-    project: { x: 1380, y: projectY },
-    milestone: { x: 1380, y: milestoneY },
-    userid: { x: 1380, y: useridY },
-    name: { x: 1380, y: nameY },
-    qrcode: { x: 1380, y: qrcodeY },
-  },
-  {
-    project: { x: 100, y: projectY + rowDiffY },
-    milestone: { x: 100, y: milestoneY + rowDiffY },
-    userid: { x: 100, y: useridY + rowDiffY },
-    name: { x: 100, y: nameY + rowDiffY },
-    qrcode: { x: 100, y: qrcodeY + rowDiffY },
-  },
-  {
-    project: { x: 420, y: projectY + rowDiffY },
-    milestone: { x: 420, y: milestoneY + rowDiffY },
-    userid: { x: 420, y: useridY + rowDiffY },
-    name: { x: 420, y: nameY + rowDiffY },
-    qrcode: { x: 420, y: qrcodeY + rowDiffY },
-  },
-  {
-    project: { x: 740, y: projectY + rowDiffY },
-    milestone: { x: 740, y: milestoneY + rowDiffY },
-    userid: { x: 740, y: useridY + rowDiffY },
-    name: { x: 740, y: nameY + rowDiffY },
-    qrcode: { x: 740, y: qrcodeY + rowDiffY },
-  },
-  {
-    project: { x: 740, y: projectY + rowDiffY },
-    milestone: { x: 740, y: milestoneY + rowDiffY },
-    userid: { x: 740, y: useridY + rowDiffY },
-    name: { x: 740, y: nameY + rowDiffY },
-    qrcode: { x: 740, y: qrcodeY + rowDiffY },
-  },
-  {
-    project: { x: 740, y: projectY + rowDiffY },
-    milestone: { x: 740, y: milestoneY + rowDiffY },
-    userid: { x: 740, y: useridY + rowDiffY },
-    name: { x: 740, y: nameY + rowDiffY },
-    qrcode: { x: 740, y: qrcodeY + rowDiffY },
-  },
-];
 
 export function StarterPage(props: {
   sheetId: string;
@@ -137,10 +62,16 @@ export function StarterPage(props: {
 
       if (!ctx) return;
 
+      const projectName = props.projectData?.project || "";
+
       // Decide which card info to use
-      const cardTemplateInfo: CardTemplateInfo = projectCardInfo;
-      if (cardTemplateInfo.project === undefined) {
-        return;
+      let cardTemplateInfo: CardTemplateInfo = projectCardInfo;
+      let isDep = false;
+      if (props.cardType.toLowerCase() === "department") {
+        isDep = true;
+
+        cardTemplateInfo = designCardInfo;
+        cardTemplateInfo.backgroundImage = getBackgroundImage(projectName);
       }
 
       const bgImage: any = await loadBgImage(cardTemplateInfo.backgroundImage);
@@ -148,17 +79,17 @@ export function StarterPage(props: {
       canvas.height = bgImage.height;
       ctx.drawImage(bgImage, 0, 0);
 
-      const projectName = props.projectData?.project || "";
-
       for (let i = 0; i < tasks.length; i += 1) {
         const foundMember = props.members.find(
           (member) => member.englishName === tasks[i].member
         );
 
         ctx.font = "55px Arial";
-        ctx.fillStyle = "#FFFFFF";
+        if (cardTemplateInfo.fontColor !== undefined) {
+          ctx.fillStyle = cardTemplateInfo.fontColor;
+        }
 
-        try {
+        if (cardTemplateInfo.project !== undefined && !isDep) {
           drawWrappedText(
             ctx,
             projectName,
@@ -167,11 +98,13 @@ export function StarterPage(props: {
             CARD_WIDTH,
             CARD_LINE_HEIGHT
           );
-        } catch (err) {
-          console.log(err);
         }
 
-        if (cardTemplateInfo.milestone !== undefined) {
+        if (isDep) {
+          ctx.textAlign = "center";
+        }
+
+        if (cardTemplateInfo.milestone !== undefined && !isDep) {
           drawWrappedText(
             ctx,
             tasks[i].type,
