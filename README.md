@@ -3,6 +3,22 @@
 npm version: v20.10.0  
 npx version: 10.2.3
 
+## Develop environment
+
+Comment basename in router
+
+```typescript
+const router = createBrowserRouter(
+  [
+    {
+      path: "/",
+      element: <TimeCard />,
+    },
+  ]
+  // { basename: "/working-hour-system-qrcode-generator" }
+);
+```
+
 ## How to deploy single page app to github page with client side routing
 
 > [!WARNING]  

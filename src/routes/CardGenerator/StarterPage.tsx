@@ -10,6 +10,7 @@ import {
   CardTemplateInfo,
   designCardInfo,
   getBackgroundImage,
+  delay,
 } from "./utils";
 import {
   uniquePairs,
@@ -84,7 +85,7 @@ export function StarterPage(props: {
           (member) => member.englishName === tasks[i].member
         );
 
-        ctx.font = "55px Arial";
+        ctx.font = "bold 50px Roboto";
         if (cardTemplateInfo.fontColor !== undefined) {
           ctx.fillStyle = cardTemplateInfo.fontColor;
         }
@@ -104,6 +105,7 @@ export function StarterPage(props: {
           ctx.textAlign = "center";
         }
 
+        ctx.font = "bold 40px Roboto";
         if (cardTemplateInfo.milestone !== undefined && !isDep) {
           drawWrappedText(
             ctx,
@@ -115,6 +117,7 @@ export function StarterPage(props: {
           );
         }
 
+        ctx.font = "40px Roboto";
         if (cardTemplateInfo.userId !== undefined && foundMember) {
           drawWrappedText(
             ctx,
@@ -126,6 +129,7 @@ export function StarterPage(props: {
           );
         }
 
+        ctx.font = "bold 40px Roboto";
         if (cardTemplateInfo.name !== undefined) {
           drawWrappedText(
             ctx,
@@ -186,7 +190,6 @@ export function StarterPage(props: {
       } catch (error) {
         console.error("Error:", error);
       }
-      props.exitLoading(1);
     };
     fetchData();
   };
@@ -219,18 +222,20 @@ export function StarterPage(props: {
       return;
     }
 
-    const qrCodeDataUrls: string[] = [];
+    const fetchData = async () => {
+      await delay(3000);
 
-    for (let i = 0; i < qrCodeUrls.length; i++) {
-      const canvas = document
-        .getElementById(`qrcode-${i}`)
-        ?.querySelector<HTMLCanvasElement>("canvas");
-      if (canvas) {
-        qrCodeDataUrls.push(canvas.toDataURL("image/png"));
+      const qrCodeDataUrls: string[] = [];
+
+      for (let i = 0; i < qrCodeUrls.length; i++) {
+        const canvas = document
+          .getElementById(`qrcode-${i}`)
+          ?.querySelector<HTMLCanvasElement>("canvas");
+        if (canvas) {
+          qrCodeDataUrls.push(canvas.toDataURL("image/png"));
+        }
       }
-    }
 
-    const fetchData = async (qrCodeDataUrls: string[]) => {
       const links: string[] = [];
       const zip = new JSZip();
 
@@ -260,9 +265,10 @@ export function StarterPage(props: {
         setDownloadLink(downloadUrl);
       });
       setDownloadLinks(links);
+      props.exitLoading(1);
     };
 
-    fetchData(qrCodeDataUrls);
+    fetchData();
   }, [qrCodeUrls, props.projectData]);
 
   return (
@@ -317,7 +323,7 @@ export function StarterPage(props: {
             key={index}
             direction="vertical"
           >
-            <QRCode value={url} size={160} color={"#1a4499"} />
+            <QRCode value={url} size={160} errorLevel={"L"} color={"#1a4499"} />
           </Space>
         ))}
       </div>

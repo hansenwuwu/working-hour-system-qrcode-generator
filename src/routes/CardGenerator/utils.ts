@@ -105,18 +105,18 @@ export const projectCardInfo: CardTemplateInfo = {
 
   milestone: generateCombinations(
     generateArray(200, 640, 5),
-    generateArray(420, 1060, 2)
+    generateArray(460, 1060, 2)
   ),
   userId: generateCombinations(
     generateArray(200, 640, 5),
-    generateArray(620, 1060, 2)
+    generateArray(610, 1060, 2)
   ),
   name: generateCombinations(
     generateArray(200, 640, 5),
-    generateArray(700, 1060, 2)
+    generateArray(680, 1060, 2)
   ),
   qrCode: generateCombinations(
-    generateArray(330, 640, 5),
+    generateArray(310, 640, 5),
     generateArray(800, 1060, 2)
   ),
   fontColor: "#FFFFFF",
@@ -132,7 +132,7 @@ const depCardNamePos = generateCombinations(
 );
 const depCardQRCodeIdPos = generateCombinations(
   generateArray(325, 640, 5),
-  generateArray(820, 1060, 2)
+  generateArray(780, 1060, 2)
 );
 const depCardFontColor = "#1a4499";
 
@@ -171,3 +171,7 @@ export const getBackgroundImage = (dep: string) => {
   // Engineer the best
   return engineerCardTemplate;
 };
+
+export function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
