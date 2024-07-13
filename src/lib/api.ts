@@ -3,7 +3,8 @@ import { ProjectData, MemberData } from "./models";
 
 export const getTasks = (sheetId: string) => {
   return new Promise<ProjectData>((resolve, reject) => {
-    const scriptUrl = `https://script.google.com/macros/s/AKfycbx7-Jss8FzhGWP2h9Lbs7O6rqIaCRAKiaTXmhXqwAH7DIq-8HFc6f95Q6ZhW8LKpA9kLw/exec?sheetId=${sheetId}`;
+    // const scriptUrl = `https://script.google.com/macros/s/AKfycbx7-Jss8FzhGWP2h9Lbs7O6rqIaCRAKiaTXmhXqwAH7DIq-8HFc6f95Q6ZhW8LKpA9kLw/exec?sheetId=${sheetId}`;
+    const scriptUrl = `https://script.google.com/macros/s/AKfycbz1TIBwHmttjDcKbmme5u6-aLnFdlJQuJZBwaT0G8iiNz_cbmtVq_yAbszCMZ05Zypbzw/exec?apiType=getProject&sheetId=${sheetId}`;
 
     axios
       .get(scriptUrl)
@@ -19,7 +20,8 @@ export const getTasks = (sheetId: string) => {
 
 export const getMembers = (sheetId: string) => {
   return new Promise<MemberData[]>((resolve, reject) => {
-    const scriptUrl = `https://script.google.com/macros/s/AKfycbygWit34StuZWbX-p_AHgKd_xMYYUpJfJDepd7Czc3IsJHxln1p6EWpQRokE-olC4Zz/exec?sheetId=${sheetId}`;
+    // const scriptUrl = `https://script.google.com/macros/s/AKfycbygWit34StuZWbX-p_AHgKd_xMYYUpJfJDepd7Czc3IsJHxln1p6EWpQRokE-olC4Zz/exec?sheetId=${sheetId}`;
+    const scriptUrl = `https://script.google.com/macros/s/AKfycbz1TIBwHmttjDcKbmme5u6-aLnFdlJQuJZBwaT0G8iiNz_cbmtVq_yAbszCMZ05Zypbzw/exec?apiType=getMembers&sheetId=${sheetId}`;
 
     axios
       .get(scriptUrl)

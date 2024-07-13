@@ -168,7 +168,6 @@ export function StarterPage(props: {
 
   const getProjectData = (sheetId: string) => {
     const fetchData = async () => {
-      props.enterLoading(1);
       try {
         const members = await getMembers(sheetId);
         props.setMembers(members);
@@ -218,7 +217,7 @@ export function StarterPage(props: {
   }, [cardInfo, props.projectData]);
 
   useEffect(() => {
-    if (props.projectData === undefined) {
+    if (props.projectData === undefined || qrCodeUrls.length == 0) {
       return;
     }
 
@@ -311,6 +310,11 @@ export function StarterPage(props: {
           type="primary"
           loading={props.loadings[1]}
           onClick={() => {
+            props.enterLoading(1);
+            setCardInfo([]);
+            setDownloadLink(null);
+            setDownloadLinks([]);
+            setQrCodeUrls([]);
             getProjectData(props.sheetId);
           }}
         >
