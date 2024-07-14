@@ -123,16 +123,16 @@ export const projectCardInfo: CardTemplateInfo = {
 };
 
 const depCardUserIdPos = generateCombinations(
-  generateArray(480, 640, 5),
+  generateArray(467, 638, 5),
   generateArray(620, 1060, 2)
 );
 const depCardNamePos = generateCombinations(
-  generateArray(480, 640, 5),
+  generateArray(467, 638, 5),
   generateArray(700, 1060, 2)
 );
 const depCardQRCodeIdPos = generateCombinations(
-  generateArray(325, 640, 5),
-  generateArray(780, 1060, 2)
+  generateArray(312, 638, 5),
+  generateArray(832, 1062, 2)
 );
 const depCardFontColor = "#1a4499";
 
