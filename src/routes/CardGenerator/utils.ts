@@ -116,8 +116,8 @@ export const projectCardInfo: CardTemplateInfo = {
     generateArray(680, 1060, 2)
   ),
   qrCode: generateCombinations(
-    generateArray(310, 640, 5),
-    generateArray(800, 1060, 2)
+    generateArray(312, 638, 5),
+    generateArray(835, 1060, 2)
   ),
   fontColor: "#FFFFFF",
 };
