@@ -18,6 +18,7 @@ import {
   CARD_LINE_HEIGHT,
 } from "./utils";
 import jsPDF from "jspdf";
+import testImage from "../../assets/images/chiikawa.jpg";
 
 const CHUNK_SIZE = 10;
 
@@ -79,6 +80,9 @@ export function StarterPage(props: {
         cardTemplateInfo.backgroundImage = getBackgroundImage(projectName);
       }
 
+      // TODO - remove demo image
+      const image: any = await loadBgImage(testImage);
+
       const bgImage: any = await loadBgImage(cardTemplateInfo.backgroundImage);
       canvas.width = bgImage.width;
       canvas.height = bgImage.height;
@@ -133,7 +137,7 @@ export function StarterPage(props: {
           );
         }
 
-        ctx.font = "bold 40px MicrosoftJhengHeiUI";
+        ctx.font = "40px MicrosoftJhengHeiUI";
         if (cardTemplateInfo.name !== undefined) {
           drawWrappedText(
             ctx,
@@ -142,6 +146,42 @@ export function StarterPage(props: {
             cardTemplateInfo.name[i].y,
             CARD_WIDTH,
             CARD_LINE_HEIGHT
+          );
+        }
+
+        // Generate avatar
+        // TODO - replace image
+        const avatarCanvas = document.createElement("canvas");
+        const avatarCtx = avatarCanvas.getContext("2d");
+        avatarCanvas.width = image.width;
+        avatarCanvas.height = image.height;
+        if (image && avatarCtx && cardTemplateInfo.name !== undefined) {
+          const centerX = avatarCanvas.width / 2;
+          const centerY = avatarCanvas.height / 2;
+          const radius = Math.min(image.width, image.height) / 2;
+
+          avatarCtx.save();
+          avatarCtx.beginPath();
+          avatarCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+          avatarCtx.closePath();
+          avatarCtx.clip();
+
+          avatarCtx.drawImage(
+            image,
+            centerX - radius,
+            centerY - radius,
+            radius * 2,
+            radius * 2
+          );
+
+          avatarCtx.restore();
+
+          ctx.drawImage(
+            avatarCanvas,
+            cardTemplateInfo.avatar[i].x,
+            cardTemplateInfo.avatar[i].y,
+            150,
+            150
           );
         }
       }
@@ -157,7 +197,9 @@ export function StarterPage(props: {
             ctx.drawImage(
               qrCodeImage,
               cardTemplateInfo.qrCode[i].x,
-              cardTemplateInfo.qrCode[i].y
+              cardTemplateInfo.qrCode[i].y,
+              353,
+              353
             );
           }
 
@@ -355,6 +397,7 @@ export function StarterPage(props: {
             setCardInfo([]);
             setCreatedPDF(false);
             setDownloadLinks([]);
+            setPreprocessLinks([]);
             setQrCodeUrls([]);
             getProjectData(props.sheetId);
           }}
@@ -370,7 +413,6 @@ export function StarterPage(props: {
           >
             <QRCode
               value={url}
-              size={176}
               errorLevel={"L"}
               color={"#1a4499"}
               bgColor="#FFFFFF"

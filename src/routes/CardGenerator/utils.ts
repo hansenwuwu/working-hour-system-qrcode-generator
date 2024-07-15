@@ -68,6 +68,7 @@ export interface CardTemplateInfo {
   userId: Pos[];
   name: Pos[];
   qrCode: Pos[];
+  avatar: Pos[];
   fontColor: string;
 }
 
@@ -108,31 +109,39 @@ export const projectCardInfo: CardTemplateInfo = {
     generateArray(460, 1060, 2)
   ),
   userId: generateCombinations(
-    generateArray(200, 640, 5),
+    generateArray(400, 640, 5),
     generateArray(610, 1060, 2)
   ),
   name: generateCombinations(
-    generateArray(200, 640, 5),
+    generateArray(400, 640, 5),
     generateArray(680, 1060, 2)
   ),
   qrCode: generateCombinations(
     generateArray(295, 638, 5),
     generateArray(815, 1063, 2)
   ),
+  avatar: generateCombinations(
+    generateArray(200, 640, 5),
+    generateArray(555, 1060, 2)
+  ),
   fontColor: "#FFFFFF",
 };
 
 const depCardUserIdPos = generateCombinations(
   generateArray(467, 638, 5),
-  generateArray(620, 1060, 2)
+  generateArray(690, 1060, 2)
 );
 const depCardNamePos = generateCombinations(
   generateArray(467, 638, 5),
-  generateArray(700, 1060, 2)
+  generateArray(750, 1060, 2)
 );
 const depCardQRCodeIdPos = generateCombinations(
   generateArray(295, 638, 5),
   generateArray(815, 1063, 2)
+);
+const depCardAvatarPos = generateCombinations(
+  generateArray(385, 638, 5),
+  generateArray(480, 1060, 2)
 );
 const depCardFontColor = "#1a4499";
 
@@ -141,6 +150,7 @@ export const designCardInfo: CardTemplateInfo = {
   userId: depCardUserIdPos,
   name: depCardNamePos,
   qrCode: depCardQRCodeIdPos,
+  avatar: depCardAvatarPos,
   fontColor: depCardFontColor,
 };
 
@@ -151,7 +161,7 @@ export const getBackgroundImage = (dep: string) => {
     return adminCardTemplate;
   }
   if (dep === "design") {
-    return designCardInfo;
+    return designCardTemplate;
   }
   if (dep === "engineer") {
     return engineerCardTemplate;
