@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, QRCode, Space } from "antd";
+import { Button, Input, QRCode, Space, Select, Checkbox } from "antd";
 import { getTasks, getMembers } from "../../lib/api";
 import { MemberData, ProjectData, TaskData } from "../../lib/models";
 import { addQueryParamsToUrl } from "./model";
@@ -19,6 +19,7 @@ import {
 } from "./utils";
 import jsPDF from "jspdf";
 import testImage from "../../assets/images/chiikawa.jpg";
+import type { SelectProps } from "antd";
 
 const CHUNK_SIZE = 10;
 
@@ -36,9 +37,12 @@ export function StarterPage(props: {
   setCardType: CallableFunction;
   setCurPage: CallableFunction;
 }) {
-  const [cardInfo, setCardInfo] = useState<TaskData[]>([]);
-  const [createdPDF, setCreatedPDF] = useState<boolean>(false);
+  const [isSelectAll, setIsSelectAll] = useState<boolean>(true);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
 
+  const [cardInfo, setCardInfo] = useState<TaskData[]>([]);
+
+  const [createdPDF, setCreatedPDF] = useState<boolean>(false);
   const [preprocessLinks, setPreprocessLinks] = useState<string[]>([]);
   const [downloadLinks, setDownloadLinks] = useState<string[]>([]);
 
@@ -239,17 +243,32 @@ export function StarterPage(props: {
         props.setCardType(projectData.cardType);
 
         // Get unique user and milestone pair
-        setCardInfo(
-          uniquePairs(projectData.tasks).sort((a, b) => {
-            if (a.member < b.member) return -1;
-            if (a.member > b.member) return 1;
-            if (a.type < b.type) return -1;
-            if (a.type > b.type) return 1;
-            return 0;
+        const item = uniquePairs(projectData.tasks).sort((a, b) => {
+          if (a.member < b.member) return -1;
+          if (a.member > b.member) return 1;
+          if (a.type < b.type) return -1;
+          if (a.type > b.type) return 1;
+          return 0;
+        });
+        setQrCodeUrls(
+          item.map((info) => {
+            const foundMember = members.find((member) => {
+              return member.englishName === info.member;
+            });
+            return addQueryParamsToUrl(TIMECARD_URL, {
+              id: props.sheetId,
+              user: foundMember?.jobNumber || "",
+              milestone: info.type,
+            });
           })
         );
+
+        // delay assignment
+        setCardInfo(item);
       } catch (error) {
         console.error("Error:", error);
+      } finally {
+        props.exitLoading(1);
       }
     };
     fetchData();
@@ -264,93 +283,90 @@ export function StarterPage(props: {
     }
   };
 
-  // Get from generate button
-  useEffect(() => {
-    if (
-      props.projectData === undefined ||
-      cardInfo.length === 0 ||
-      props.cardType === ""
-    ) {
-      return;
+  const createOptions = (infos: TaskData[]) => {
+    const options: SelectProps["options"] = [];
+    for (let i = 0; i < infos.length; i++) {
+      const foundMember = props.members.find(
+        (member) => member.englishName === infos[i].member
+      );
+      options.push({
+        label:
+          (foundMember ? foundMember.englishName : infos[i].member) +
+          " - " +
+          infos[i].type,
+        value: i,
+      });
     }
-    setQrCodeUrls(
-      cardInfo.map((info) => {
-        const foundMember = props.members.find(
-          (member) => member.englishName === info.member
-        );
-        return addQueryParamsToUrl(TIMECARD_URL, {
-          id: props.sheetId,
-          user: foundMember?.jobNumber || "",
-          milestone: info.type,
-        });
-      })
-    );
-  }, [cardInfo, props.projectData]);
+    return options;
+  };
 
-  useEffect(() => {
-    if (props.projectData === undefined || qrCodeUrls.length == 0) {
-      return;
+  const fetchPDFData = async () => {
+    await delay(3000);
+
+    const qrCodeDataUrls: string[] = [];
+
+    for (let i = 0; i < qrCodeUrls.length; i++) {
+      const canvas = document
+        .getElementById(`qrcode-${i}`)
+        ?.querySelector<HTMLCanvasElement>("canvas");
+      if (canvas) {
+        qrCodeDataUrls.push(canvas.toDataURL("image/png"));
+      }
     }
 
-    const fetchData = async () => {
-      await delay(3000);
+    const preprocessLinks: string[] = [];
+    const links: string[] = [];
 
-      const qrCodeDataUrls: string[] = [];
+    const chunkedCardInfos: any[][] = [];
+    const chunkedQrcodeUrls: any[][] = [];
 
-      for (let i = 0; i < qrCodeUrls.length; i++) {
-        const canvas = document
-          .getElementById(`qrcode-${i}`)
-          ?.querySelector<HTMLCanvasElement>("canvas");
-        if (canvas) {
-          qrCodeDataUrls.push(canvas.toDataURL("image/png"));
-        }
-      }
+    let filteredCardInfo = cardInfo;
+    let filteredQrCodeDataUrls = qrCodeDataUrls;
 
-      const preprocessLinks: string[] = [];
-      const links: string[] = [];
+    if (!isSelectAll) {
+      filteredCardInfo = filteredCardInfo.filter((info, index) =>
+        selectedItems.some((item) => index.toString() == item)
+      );
+      filteredQrCodeDataUrls = filteredQrCodeDataUrls.filter((info, index) =>
+        selectedItems.some((item) => index.toString() == item)
+      );
+    }
 
-      const chunkedCardInfos: any[][] = [];
-      const chunkedQrcodeUrls: any[][] = [];
+    for (let i = 0; i < filteredCardInfo.length; i += CHUNK_SIZE) {
+      chunkedCardInfos.push(filteredCardInfo.slice(i, i + CHUNK_SIZE));
+      chunkedQrcodeUrls.push(filteredQrCodeDataUrls.slice(i, i + CHUNK_SIZE));
+    }
 
-      for (let i = 0; i < cardInfo.length; i += CHUNK_SIZE) {
-        chunkedCardInfos.push(cardInfo.slice(i, i + CHUNK_SIZE));
-        chunkedQrcodeUrls.push(qrCodeDataUrls.slice(i, i + CHUNK_SIZE));
-      }
+    for (let i = 0; i < chunkedCardInfos.length; i++) {
+      const dataUrls = await generateImageWithText(
+        chunkedCardInfos[i],
+        chunkedQrcodeUrls[i]
+      );
+      links.push(dataUrls[0]);
+      preprocessLinks.push(dataUrls[1]);
+    }
 
-      for (let i = 0; i < chunkedCardInfos.length; i++) {
-        const dataUrls = await generateImageWithText(
-          chunkedCardInfos[i],
-          chunkedQrcodeUrls[i]
-        );
-        links.push(dataUrls[0]);
-        preprocessLinks.push(dataUrls[1]);
-      }
+    // Convert to PDF
+    const pdf = new jsPDF();
+    for (let i = 0; i < links.length; i++) {
+      if (i > 0) pdf.addPage();
+      const imgData = links[i];
+      const imgProps = pdf.getImageProperties(imgData);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pdfWidth;
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      const x = 0;
+      const y = (pdfHeight - imgHeight) / 2;
+      pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+    }
+    const pdfBlob = pdf.output("blob");
+    setPdfBlob(pdfBlob);
 
-      // Convert to PDF
-      const pdf = new jsPDF();
-      for (let i = 0; i < links.length; i++) {
-        if (i > 0) pdf.addPage();
-        const imgData = links[i];
-        const imgProps = pdf.getImageProperties(imgData);
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-        const imgWidth = pdfWidth;
-        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-        const x = 0;
-        const y = (pdfHeight - imgHeight) / 2;
-        pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
-      }
-      const pdfBlob = pdf.output("blob");
-      setPdfBlob(pdfBlob);
-
-      setCreatedPDF(true);
-      setPreprocessLinks(preprocessLinks);
-      setDownloadLinks(links);
-      props.exitLoading(1);
-    };
-
-    fetchData();
-  }, [qrCodeUrls, props.projectData]);
+    setCreatedPDF(true);
+    setPreprocessLinks(preprocessLinks);
+    setDownloadLinks(links);
+  };
 
   return (
     <div
@@ -382,6 +398,7 @@ export function StarterPage(props: {
             props.setSheetId(e.target.value);
           }}
         />
+
         <Button
           style={{
             marginTop: "20px",
@@ -399,11 +416,64 @@ export function StarterPage(props: {
             setDownloadLinks([]);
             setPreprocessLinks([]);
             setQrCodeUrls([]);
+            setSelectedItems([]);
+            setIsSelectAll(true);
             getProjectData(props.sheetId);
           }}
+          disabled={props.loadings[2]}
         >
           Generate
         </Button>
+
+        {cardInfo.length > 0 && (
+          <>
+            <Checkbox
+              defaultChecked
+              checked={isSelectAll}
+              onChange={(e) => {
+                setIsSelectAll(e.target.checked);
+                setSelectedItems([]);
+              }}
+              style={{ marginTop: "50px" }}
+            >
+              Select all
+            </Checkbox>
+            <Select
+              mode="multiple"
+              showSearch
+              optionFilterProp="label"
+              allowClear
+              style={{ width: "100%" }}
+              onChange={(value) => {
+                setSelectedItems(value);
+              }}
+              value={selectedItems}
+              options={createOptions(cardInfo)}
+              disabled={isSelectAll}
+            />
+            <Button
+              style={{
+                marginTop: "20px",
+                width: "300px",
+                height: "60px",
+                fontSize: "30px",
+                fontFamily: "MicrosoftJhengHeiUI",
+              }}
+              type="primary"
+              loading={props.loadings[2]}
+              onClick={async () => {
+                setCreatedPDF(false);
+                setDownloadLinks([]);
+                setPreprocessLinks([]);
+                props.enterLoading(2);
+                await fetchPDFData();
+                props.exitLoading(2);
+              }}
+            >
+              Create timecards
+            </Button>
+          </>
+        )}
         {qrCodeUrls.map((url, index) => (
           <Space
             style={{ display: "none" }}
