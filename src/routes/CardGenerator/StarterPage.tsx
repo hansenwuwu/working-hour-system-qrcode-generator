@@ -346,6 +346,7 @@ export function StarterPage(props: {
             width: "200px",
             height: "60px",
             fontSize: "30px",
+            fontFamily: "MicrosoftJhengHeiUI",
           }}
           type="primary"
           loading={props.loadings[1]}

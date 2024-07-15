@@ -14,6 +14,7 @@ code {
 
 @font-face {
   font-family: "MicrosoftJhengHeiUI";
-  src: local("MicrosoftJhengHeiUI"),
-    url(../public/Microsoft-JhengHei.ttf) format("opentype");
+  src: url("./assets/fonts/Microsoft-JhengHei.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
