@@ -329,7 +329,7 @@ export function StarterPage(props: {
           >
             <QRCode
               value={url}
-              size={160}
+              size={176}
               errorLevel={"L"}
               color={"#1a4499"}
               bgColor="#FFFFFF"
