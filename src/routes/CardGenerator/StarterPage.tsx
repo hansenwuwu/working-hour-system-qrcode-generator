@@ -89,7 +89,7 @@ export function StarterPage(props: {
           (member) => member.englishName === tasks[i].member
         );
 
-        ctx.font = "bold 50px Roboto";
+        ctx.font = "bold 50px MicrosoftJhengHeiUI";
         if (cardTemplateInfo.fontColor !== undefined) {
           ctx.fillStyle = cardTemplateInfo.fontColor;
         }
@@ -109,7 +109,7 @@ export function StarterPage(props: {
           ctx.textAlign = "center";
         }
 
-        ctx.font = "bold 40px Roboto";
+        ctx.font = "bold 40px MicrosoftJhengHeiUI";
         if (cardTemplateInfo.milestone !== undefined && !isDep) {
           drawWrappedText(
             ctx,
@@ -121,7 +121,7 @@ export function StarterPage(props: {
           );
         }
 
-        ctx.font = "40px Roboto";
+        ctx.font = "40px MicrosoftJhengHeiUI";
         if (cardTemplateInfo.userId !== undefined && foundMember) {
           drawWrappedText(
             ctx,
@@ -133,7 +133,7 @@ export function StarterPage(props: {
           );
         }
 
-        ctx.font = "bold 40px Roboto";
+        ctx.font = "bold 40px MicrosoftJhengHeiUI";
         if (cardTemplateInfo.name !== undefined) {
           drawWrappedText(
             ctx,
