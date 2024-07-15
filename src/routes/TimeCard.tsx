@@ -661,8 +661,8 @@ function TimeCard() {
             data.tasks = data.tasks.filter(
               (task) =>
                 task.type === milestone &&
-                task.member === foundMember.englishName &&
-                task.status === "On-going"
+                task.member === foundMember.englishName
+              // task.status === "On-going"
             );
 
             setProjectData(data);
