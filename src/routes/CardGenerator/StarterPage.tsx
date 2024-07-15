@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Input, QRCode, Space } from "antd";
 import { getTasks, getMembers } from "../../lib/api";
 import { MemberData, ProjectData, TaskData } from "../../lib/models";
-import JSZip from "jszip";
 import { addQueryParamsToUrl } from "./model";
 import {
   drawWrappedText,
@@ -18,6 +17,7 @@ import {
   CARD_WIDTH,
   CARD_LINE_HEIGHT,
 } from "./utils";
+import jsPDF from "jspdf";
 
 const CHUNK_SIZE = 10;
 
@@ -36,11 +36,15 @@ export function StarterPage(props: {
   setCurPage: CallableFunction;
 }) {
   const [cardInfo, setCardInfo] = useState<TaskData[]>([]);
-  const [downloadLink, setDownloadLink] = useState<string | null>(null);
+  const [createdPDF, setCreatedPDF] = useState<boolean>(false);
+
+  const [preprocessLinks, setPreprocessLinks] = useState<string[]>([]);
   const [downloadLinks, setDownloadLinks] = useState<string[]>([]);
 
   // data url for each QRCode
   const [qrCodeUrls, setQrCodeUrls] = useState<string[]>([]);
+
+  const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
   const loadBgImage = (imgSrc: any) => {
     return new Promise((resolve, reject) => {
@@ -56,7 +60,7 @@ export function StarterPage(props: {
   const generateImageWithText = (
     tasks: TaskData[],
     qrCodeUrls: any
-  ): Promise<string> => {
+  ): Promise<string[]> => {
     return new Promise(async (resolve) => {
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -158,8 +162,24 @@ export function StarterPage(props: {
           }
 
           if (loadcount == tasks.length) {
-            const dataUrl = canvas.toDataURL("image/png");
-            resolve(dataUrl);
+            const rotatedCanvas = document.createElement("canvas");
+            const rotatedCtx = rotatedCanvas.getContext("2d");
+
+            if (!rotatedCtx) return;
+
+            rotatedCanvas.width = canvas.height;
+            rotatedCanvas.height = canvas.width;
+
+            rotatedCtx.translate(
+              rotatedCanvas.width / 2,
+              rotatedCanvas.height / 2
+            );
+            rotatedCtx.rotate((270 * Math.PI) / 180);
+            rotatedCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+
+            const originalUrl = canvas.toDataURL("image/png");
+            const dataUrl = rotatedCanvas.toDataURL("image/png");
+            resolve([dataUrl, originalUrl]);
           }
         };
       }
@@ -191,6 +211,15 @@ export function StarterPage(props: {
       }
     };
     fetchData();
+  };
+
+  const downloadPdf = () => {
+    if (pdfBlob) {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(pdfBlob);
+      link.download = "timecards.pdf";
+      link.click();
+    }
   };
 
   // Get from generate button
@@ -235,8 +264,8 @@ export function StarterPage(props: {
         }
       }
 
+      const preprocessLinks: string[] = [];
       const links: string[] = [];
-      const zip = new JSZip();
 
       const chunkedCardInfos: any[][] = [];
       const chunkedQrcodeUrls: any[][] = [];
@@ -247,22 +276,33 @@ export function StarterPage(props: {
       }
 
       for (let i = 0; i < chunkedCardInfos.length; i++) {
-        const dataUrl = await generateImageWithText(
+        const dataUrls = await generateImageWithText(
           chunkedCardInfos[i],
           chunkedQrcodeUrls[i]
         );
-        const base64Data = dataUrl.split(",")[1];
-        zip.file(
-          `${props.projectData?.project}_timecard_${i + 1}.png`,
-          base64Data,
-          { base64: true }
-        );
-        links.push(dataUrl);
+        links.push(dataUrls[0]);
+        preprocessLinks.push(dataUrls[1]);
       }
-      zip.generateAsync({ type: "blob" }).then((content) => {
-        const downloadUrl = URL.createObjectURL(content);
-        setDownloadLink(downloadUrl);
-      });
+
+      // Convert to PDF
+      const pdf = new jsPDF();
+      for (let i = 0; i < links.length; i++) {
+        if (i > 0) pdf.addPage();
+        const imgData = links[i];
+        const imgProps = pdf.getImageProperties(imgData);
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+        const imgWidth = pdfWidth;
+        const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+        const x = 0;
+        const y = (pdfHeight - imgHeight) / 2;
+        pdf.addImage(imgData, "PNG", x, y, imgWidth, imgHeight);
+      }
+      const pdfBlob = pdf.output("blob");
+      setPdfBlob(pdfBlob);
+
+      setCreatedPDF(true);
+      setPreprocessLinks(preprocessLinks);
       setDownloadLinks(links);
       props.exitLoading(1);
     };
@@ -312,7 +352,7 @@ export function StarterPage(props: {
           onClick={() => {
             props.enterLoading(1);
             setCardInfo([]);
-            setDownloadLink(null);
+            setCreatedPDF(false);
             setDownloadLinks([]);
             setQrCodeUrls([]);
             getProjectData(props.sheetId);
@@ -347,50 +387,26 @@ export function StarterPage(props: {
           marginTop: "200px",
         }}
       >
-        {downloadLink && (
-          <a
-            href={downloadLink}
-            download={`timecards.zip`}
-            target="_blank"
-            style={{ marginBottom: "50px" }}
+        {createdPDF && (
+          <Button
+            style={{
+              marginTop: "20px",
+              width: "300px",
+              height: "60px",
+              fontSize: "30px",
+              backgroundColor: "green",
+            }}
+            type="primary"
+            onClick={() => {
+              downloadPdf();
+            }}
           >
-            <Button
-              style={{
-                marginTop: "20px",
-                width: "300px",
-                height: "60px",
-                fontSize: "30px",
-                backgroundColor: "green",
-              }}
-              type="primary"
-            >
-              Download all cards
-            </Button>
-          </a>
+            Download all cards
+          </Button>
         )}
 
-        {downloadLinks.map((url, index) => (
+        {preprocessLinks.map((url, index) => (
           <div key={index} style={{ textAlign: "center", width: "100%" }}>
-            <div>
-              <a
-                href={downloadLinks[index]}
-                download={`timecard_${index + 1}.png`}
-                style={{ width: "100%" }}
-                target="_blank"
-              >
-                <Button
-                  style={{
-                    marginTop: "20px",
-                    width: "300px",
-                    height: "60px",
-                    fontSize: "30px",
-                  }}
-                  type="primary"
-                >
-                  Download card {index + 1}
-                </Button>
-              </a>
-            </div>
             <img
               src={url}
               alt={`Image Preview ${index + 1}`}
