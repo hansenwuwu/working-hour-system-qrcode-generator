@@ -1,24 +1,25 @@
 {
   "files": {
     "main.css": "/working-hour-system-qrcode-generator/static/css/main.e512ad09.css",
-    "main.js": "/working-hour-system-qrcode-generator/static/js/main.8f3e22fd.js",
+    "main.js": "/working-hour-system-qrcode-generator/static/js/main.4b6c8c2b.js",
     "static/js/453.22cd0bc6.chunk.js": "/working-hour-system-qrcode-generator/static/js/453.22cd0bc6.chunk.js",
     "static/js/239.3159edc2.chunk.js": "/working-hour-system-qrcode-generator/static/js/239.3159edc2.chunk.js",
     "static/js/213.3379a2d6.chunk.js": "/working-hour-system-qrcode-generator/static/js/213.3379a2d6.chunk.js",
     "static/js/667.cb53deea.chunk.js": "/working-hour-system-qrcode-generator/static/js/667.cb53deea.chunk.js",
     "static/media/Microsoft-JhengHei.ttf": "/working-hour-system-qrcode-generator/static/media/Microsoft-JhengHei.1c1a58885b61f5824c19.ttf",
-    "static/media/marketing_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/marketing_dep_card.50e69f3ffb5912061fed.jpg",
-    "static/media/engineer_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/engineer_dep_card.4cdc2e7bddf3fc09bf95.jpg",
-    "static/media/operation_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/operation_dep_card.e1a669be1a359a81d4a8.jpg",
-    "static/media/design_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/design_dep_card.c98b08da0a801d40b8e2.jpg",
-    "static/media/mis_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/mis_dep_card.152d60e66cda47c1226c.jpg",
-    "static/media/sales_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/sales_dep_card.8333cf9c0a4a668b9895.jpg",
-    "static/media/admin_dep_card.jpg": "/working-hour-system-qrcode-generator/static/media/admin_dep_card.0f8afa572bd366e1c062.jpg",
-    "static/media/project_card.jpg": "/working-hour-system-qrcode-generator/static/media/project_card.328ad7c5ae6282f8c87b.jpg",
+    "static/media/marketing.jpg": "/working-hour-system-qrcode-generator/static/media/marketing.336121fd3a6a283bcb06.jpg",
+    "static/media/engineer.jpg": "/working-hour-system-qrcode-generator/static/media/engineer.c959fd23d25f340aedd0.jpg",
+    "static/media/operation.jpg": "/working-hour-system-qrcode-generator/static/media/operation.86b4ece9892adc81887a.jpg",
+    "static/media/design.jpg": "/working-hour-system-qrcode-generator/static/media/design.9fd103cdedbb648a5dc5.jpg",
+    "static/media/mis.jpg": "/working-hour-system-qrcode-generator/static/media/mis.b3a53e8a368d50a7affc.jpg",
+    "static/media/sales.jpg": "/working-hour-system-qrcode-generator/static/media/sales.55fa1d7b7fe1875e94eb.jpg",
+    "static/media/qcs.jpg": "/working-hour-system-qrcode-generator/static/media/qcs.ecf2b0f1c2dd44f44bb2.jpg",
+    "static/media/admin.jpg": "/working-hour-system-qrcode-generator/static/media/admin.6df2ae8d2579e064d808.jpg",
+    "static/media/project.jpg": "/working-hour-system-qrcode-generator/static/media/project.3a955cd399d84cbe0a08.jpg",
     "static/media/chiikawa.jpg": "/working-hour-system-qrcode-generator/static/media/chiikawa.0ce5853c8d1b7ad77138.jpg",
     "index.html": "/working-hour-system-qrcode-generator/index.html",
     "main.e512ad09.css.map": "/working-hour-system-qrcode-generator/static/css/main.e512ad09.css.map",
-    "main.8f3e22fd.js.map": "/working-hour-system-qrcode-generator/static/js/main.8f3e22fd.js.map",
+    "main.4b6c8c2b.js.map": "/working-hour-system-qrcode-generator/static/js/main.4b6c8c2b.js.map",
     "453.22cd0bc6.chunk.js.map": "/working-hour-system-qrcode-generator/static/js/453.22cd0bc6.chunk.js.map",
     "239.3159edc2.chunk.js.map": "/working-hour-system-qrcode-generator/static/js/239.3159edc2.chunk.js.map",
     "213.3379a2d6.chunk.js.map": "/working-hour-system-qrcode-generator/static/js/213.3379a2d6.chunk.js.map",
@@ -26,6 +27,6 @@
   },
   "entrypoints": [
     "static/css/main.e512ad09.css",
-    "static/js/main.8f3e22fd.js"
+    "static/js/main.4b6c8c2b.js"
   ]
 }
