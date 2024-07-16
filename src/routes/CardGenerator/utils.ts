@@ -1,12 +1,13 @@
 import { TaskData } from "../../lib/models";
-import projectCardTemplate from "../../assets/images/project_card.jpg";
-import designCardTemplate from "../../assets/images/design_dep_card.jpg";
-import adminCardTemplate from "../../assets/images/admin_dep_card.jpg";
-import engineerCardTemplate from "../../assets/images/engineer_dep_card.jpg";
-import marketingCardTemplate from "../../assets/images/marketing_dep_card.jpg";
-import misCardTemplate from "../../assets/images/mis_dep_card.jpg";
-import operationCardTemplate from "../../assets/images/operation_dep_card.jpg";
-import salesCardTemplate from "../../assets/images/sales_dep_card.jpg";
+import projectCardTemplate from "../../assets/images/project.jpg";
+import designCardTemplate from "../../assets/images/design.jpg";
+import adminCardTemplate from "../../assets/images/admin.jpg";
+import engineerCardTemplate from "../../assets/images/engineer.jpg";
+import marketingCardTemplate from "../../assets/images/marketing.jpg";
+import misCardTemplate from "../../assets/images/mis.jpg";
+import operationCardTemplate from "../../assets/images/operation.jpg";
+import salesCardTemplate from "../../assets/images/sales.jpg";
+import qcsCardTemplate from "../../assets/images/qcs.jpg";
 
 export const TIMECARD_URL =
   "https://hansenwuwu.github.io/working-hour-system-fe";
@@ -117,8 +118,8 @@ export const projectCardInfo: CardTemplateInfo = {
     generateArray(680, 1060, 2)
   ),
   qrCode: generateCombinations(
-    generateArray(295, 638, 5),
-    generateArray(815, 1063, 2)
+    generateArray(307, 638, 5),
+    generateArray(827, 1063, 2)
   ),
   avatar: generateCombinations(
     generateArray(200, 640, 5),
@@ -136,8 +137,8 @@ const depCardNamePos = generateCombinations(
   generateArray(750, 1060, 2)
 );
 const depCardQRCodeIdPos = generateCombinations(
-  generateArray(295, 638, 5),
-  generateArray(815, 1063, 2)
+  generateArray(307, 638, 5),
+  generateArray(827, 1063, 2)
 );
 const depCardAvatarPos = generateCombinations(
   generateArray(385, 638, 5),
@@ -154,30 +155,27 @@ export const designCardInfo: CardTemplateInfo = {
   fontColor: depCardFontColor,
 };
 
+const depToTemplate: { [id: string]: any } = {
+  admin: adminCardTemplate,
+  design: designCardTemplate,
+  engineer: engineerCardTemplate,
+  marketing: marketingCardTemplate,
+  mis: misCardTemplate,
+  operation: operationCardTemplate,
+  sales: salesCardTemplate,
+  qcs: qcsCardTemplate,
+};
+
 export const getBackgroundImage = (dep: string) => {
   dep = dep.toLowerCase();
 
-  if (dep === "admin") {
-    return adminCardTemplate;
+  if (dep in depToTemplate) {
+    return depToTemplate[dep];
   }
-  if (dep === "design") {
-    return designCardTemplate;
+  if (dep == "q/cs") {
+    return depToTemplate.qcs;
   }
-  if (dep === "engineer") {
-    return engineerCardTemplate;
-  }
-  if (dep === "marketing") {
-    return marketingCardTemplate;
-  }
-  if (dep === "mis") {
-    return misCardTemplate;
-  }
-  if (dep === "operation") {
-    return operationCardTemplate;
-  }
-  if (dep === "sales") {
-    return salesCardTemplate;
-  }
+
   // Engineer the best
   return engineerCardTemplate;
 };

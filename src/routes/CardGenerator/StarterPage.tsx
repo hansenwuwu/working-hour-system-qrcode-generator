@@ -18,8 +18,10 @@ import {
   CARD_LINE_HEIGHT,
 } from "./utils";
 import jsPDF from "jspdf";
-import testImage from "../../assets/images/chiikawa.jpg";
 import type { SelectProps } from "antd";
+
+import testImage from "../../assets/images/chiikawa.jpg";
+import testIcon from "../../assets/images/adat_qrcode_icon.png";
 
 const CHUNK_SIZE = 10;
 
@@ -202,8 +204,8 @@ export function StarterPage(props: {
               qrCodeImage,
               cardTemplateInfo.qrCode[i].x,
               cardTemplateInfo.qrCode[i].y,
-              353,
-              353
+              330,
+              330
             );
           }
 
@@ -434,7 +436,7 @@ export function StarterPage(props: {
                 setIsSelectAll(e.target.checked);
                 setSelectedItems([]);
               }}
-              style={{ marginTop: "50px" }}
+              style={{ marginTop: "50px", marginBottom: "20px" }}
             >
               Select all
             </Checkbox>
@@ -444,6 +446,7 @@ export function StarterPage(props: {
               optionFilterProp="label"
               allowClear
               style={{ width: "100%" }}
+              size="middle"
               onChange={(value) => {
                 setSelectedItems(value);
               }}
@@ -483,16 +486,15 @@ export function StarterPage(props: {
           >
             <QRCode
               value={url}
-              errorLevel={"L"}
               color={"#1a4499"}
               bgColor="#FFFFFF"
+              icon={testIcon}
             />
           </Space>
         ))}
       </div>
       <div
         style={{
-          // width: "1200px",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
