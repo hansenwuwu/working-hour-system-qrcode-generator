@@ -130,11 +130,11 @@ export const projectCardInfo: CardTemplateInfo = {
 
 const depCardUserIdPos = generateCombinations(
   generateArray(467, 638, 5),
-  generateArray(690, 1060, 2)
+  generateArray(710, 1060, 2)
 );
 const depCardNamePos = generateCombinations(
   generateArray(467, 638, 5),
-  generateArray(750, 1060, 2)
+  generateArray(770, 1060, 2)
 );
 const depCardQRCodeIdPos = generateCombinations(
   generateArray(307, 638, 5),
@@ -142,7 +142,7 @@ const depCardQRCodeIdPos = generateCombinations(
 );
 const depCardAvatarPos = generateCombinations(
   generateArray(385, 638, 5),
-  generateArray(480, 1060, 2)
+  generateArray(500, 1060, 2)
 );
 const depCardFontColor = "#1a4499";
 
@@ -183,3 +183,26 @@ export const getBackgroundImage = (dep: string) => {
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+export const loadBgImage = (imgSrc: any) => {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.src = imgSrc;
+    image.onload = async () => {
+      resolve(image);
+    };
+  });
+};
+
+export const extractPrefix = (filename: string): string => {
+  const match = filename.match(/^([A-Za-z0-9]+)_/);
+  return match ? match[1] : "";
+};
+
+export const importAll = (r: __WebpackModuleApi.RequireContext) => {
+  let images: { [key: string]: string } = {};
+  r.keys().forEach((item: string) => {
+    images[extractPrefix(item.replace("./", ""))] = r(item);
+  });
+  return images;
+};

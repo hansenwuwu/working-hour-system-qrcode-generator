@@ -19,9 +19,13 @@ import {
 } from "./utils";
 import jsPDF from "jspdf";
 import type { SelectProps } from "antd";
+import { loadBgImage, importAll } from "./utils";
 
-import testImage from "../../assets/images/chiikawa.jpg";
-import testIcon from "../../assets/images/adat_qrcode_icon.png";
+import adatIcon from "../../assets/images/adat_qrcode_icon.png";
+
+const avatarImages = importAll(
+  require.context("../../assets/avatars", false, /\.(png|jpg|svg)$/)
+);
 
 const CHUNK_SIZE = 10;
 
@@ -53,15 +57,13 @@ export function StarterPage(props: {
 
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
 
-  const loadBgImage = (imgSrc: any) => {
-    return new Promise((resolve, reject) => {
-      const image = new Image();
-      // TODO switch between project/dep card
-      image.src = imgSrc;
-      image.onload = async () => {
-        resolve(image);
-      };
-    });
+  const [images, setImages] = useState<{ [key: string]: string }>({});
+
+  const getAvatar = (id: string) => {
+    if (id in avatarImages) {
+      return avatarImages[id];
+    }
+    return avatarImages["T9999"];
   };
 
   const generateImageWithText = (
@@ -85,9 +87,6 @@ export function StarterPage(props: {
         cardTemplateInfo = designCardInfo;
         cardTemplateInfo.backgroundImage = getBackgroundImage(projectName);
       }
-
-      // TODO - remove demo image
-      const image: any = await loadBgImage(testImage);
 
       const bgImage: any = await loadBgImage(cardTemplateInfo.backgroundImage);
       canvas.width = bgImage.width;
@@ -156,7 +155,9 @@ export function StarterPage(props: {
         }
 
         // Generate avatar
-        // TODO - replace image
+        const image: any = await loadBgImage(
+          getAvatar(foundMember ? foundMember.jobNumber : "")
+        );
         const avatarCanvas = document.createElement("canvas");
         const avatarCtx = avatarCanvas.getContext("2d");
         avatarCanvas.width = image.width;
@@ -489,7 +490,7 @@ export function StarterPage(props: {
               errorLevel="H"
               color={"#1a4499"}
               bgColor="#FFFFFF"
-              icon={testIcon}
+              icon={adatIcon}
               iconSize={60}
             />
           </Space>
