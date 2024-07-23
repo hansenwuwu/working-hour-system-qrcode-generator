@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, QRCode, Space, Select, Checkbox } from "antd";
-import { getTasks, getMembers } from "../../lib/api";
+import { getProjectDetail } from "../../lib/api";
 import { MemberData, ProjectData, TaskData } from "../../lib/models";
 import { addQueryParamsToUrl } from "./model";
 import {
@@ -236,17 +236,15 @@ export function StarterPage(props: {
   };
 
   const getProjectData = (sheetId: string) => {
-    const fetchData = async () => {
-      try {
-        const members = await getMembers(sheetId);
-        props.setMembers(members);
+    getProjectDetail(sheetId)
+      .then((value: ProjectData) => {
+        props.setMembers(value.members);
 
-        const projectData = await getTasks(sheetId);
-        props.setProjectData(projectData);
-        props.setCardType(projectData.cardType);
+        props.setProjectData(value);
+        props.setCardType(value.cardType);
 
         // Get unique user and milestone pair
-        const item = uniquePairs(projectData.tasks).sort((a, b) => {
+        const item = uniquePairs(value.tasks).sort((a, b) => {
           if (a.member < b.member) return -1;
           if (a.member > b.member) return 1;
           if (a.type < b.type) return -1;
@@ -255,7 +253,7 @@ export function StarterPage(props: {
         });
         setQrCodeUrls(
           item.map((info) => {
-            const foundMember = members.find((member) => {
+            const foundMember = value.members.find((member) => {
               return member.englishName === info.member;
             });
             return addQueryParamsToUrl(TIMECARD_URL, {
@@ -268,13 +266,13 @@ export function StarterPage(props: {
 
         // delay assignment
         setCardInfo(item);
-      } catch (error) {
-        console.error("Error:", error);
-      } finally {
+      })
+      .catch((error: any) => {
+        console.error("Failed to fetch data:", error);
+      })
+      .finally(() => {
         props.exitLoading(1);
-      }
-    };
-    fetchData();
+      });
   };
 
   const downloadPdf = () => {
