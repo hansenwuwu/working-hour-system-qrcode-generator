@@ -3,15 +3,10 @@ import ReactDOM from "react-dom/client";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import TimeCard from "./routes/TimeCard";
 import CardGenerator from "./routes/CardGenerator/CardGenerator";
 
 const router = createBrowserRouter(
   [
-    {
-      path: "/tc",
-      element: <TimeCard />,
-    },
     {
       path: "/",
       element: <CardGenerator />,
