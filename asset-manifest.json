@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/working-hour-system-qrcode-generator/static/css/main.e512ad09.css",
-    "main.js": "/working-hour-system-qrcode-generator/static/js/main.03d5cc73.js",
+    "main.js": "/working-hour-system-qrcode-generator/static/js/main.86b7da38.js",
     "static/js/453.22cd0bc6.chunk.js": "/working-hour-system-qrcode-generator/static/js/453.22cd0bc6.chunk.js",
     "static/js/239.3159edc2.chunk.js": "/working-hour-system-qrcode-generator/static/js/239.3159edc2.chunk.js",
     "static/js/213.3379a2d6.chunk.js": "/working-hour-system-qrcode-generator/static/js/213.3379a2d6.chunk.js",
@@ -50,7 +50,7 @@
     "static/media/T0090_Bowen.jpg": "/working-hour-system-qrcode-generator/static/media/T0090_Bowen.533b77bad8d03dc9c071.jpg",
     "index.html": "/working-hour-system-qrcode-generator/index.html",
     "main.e512ad09.css.map": "/working-hour-system-qrcode-generator/static/css/main.e512ad09.css.map",
-    "main.03d5cc73.js.map": "/working-hour-system-qrcode-generator/static/js/main.03d5cc73.js.map",
+    "main.86b7da38.js.map": "/working-hour-system-qrcode-generator/static/js/main.86b7da38.js.map",
     "453.22cd0bc6.chunk.js.map": "/working-hour-system-qrcode-generator/static/js/453.22cd0bc6.chunk.js.map",
     "239.3159edc2.chunk.js.map": "/working-hour-system-qrcode-generator/static/js/239.3159edc2.chunk.js.map",
     "213.3379a2d6.chunk.js.map": "/working-hour-system-qrcode-generator/static/js/213.3379a2d6.chunk.js.map",
@@ -58,6 +58,6 @@
   },
   "entrypoints": [
     "static/css/main.e512ad09.css",
-    "static/js/main.03d5cc73.js"
+    "static/js/main.86b7da38.js"
   ]
 }
