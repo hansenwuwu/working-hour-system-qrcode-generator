@@ -1,4 +1,4 @@
-import { TaskData } from "../../lib/models";
+import { TaskData, CardData } from "../../lib/models";
 import projectCardTemplate from "../../assets/images/project.jpg";
 import designCardTemplate from "../../assets/images/design.jpg";
 import adminCardTemplate from "../../assets/images/admin.jpg";
@@ -205,4 +205,188 @@ export const importAll = (r: __WebpackModuleApi.RequireContext) => {
     images[extractPrefix(item.replace("./", ""))] = r(item);
   });
   return images;
+};
+
+export interface DataType {
+  key: React.Key;
+  project: string;
+  milestone: string;
+  task: string;
+  item: string;
+  englishName: string;
+  cardData: CardData;
+}
+
+const avatarImages = importAll(
+  require.context("../../assets/avatars", false, /\.(png|jpg|svg)$/)
+);
+
+const getAvatar = (id: string) => {
+  if (id in avatarImages) {
+    return avatarImages[id];
+  }
+  return avatarImages["T9999"];
+};
+
+export const generateImageWithText = (
+  cardData: CardData[]
+): Promise<string[]> => {
+  return new Promise(async (resolve) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    if (!ctx) return;
+    if (cardData.length === 0) return;
+
+    // Decide which card info to use
+    let cardTemplateInfo: CardTemplateInfo = projectCardInfo;
+    let isDep = false;
+    if (cardData[0].cardType.toLowerCase() === "department") {
+      isDep = true;
+
+      cardTemplateInfo = designCardInfo;
+      cardTemplateInfo.backgroundImage = getBackgroundImage(
+        cardData[0].project
+      );
+    }
+
+    const bgImage: any = await loadBgImage(cardTemplateInfo.backgroundImage);
+    canvas.width = bgImage.width;
+    canvas.height = bgImage.height;
+    ctx.drawImage(bgImage, 0, 0);
+
+    for (let i = 0; i < cardData.length; i += 1) {
+      ctx.font = "bold 50px MicrosoftJhengHeiUI";
+      if (cardTemplateInfo.fontColor !== undefined) {
+        ctx.fillStyle = cardTemplateInfo.fontColor;
+      }
+
+      if (cardTemplateInfo.project !== undefined && !isDep) {
+        drawWrappedText(
+          ctx,
+          cardData[i].project,
+          cardTemplateInfo.project[i].x,
+          cardTemplateInfo.project[i].y,
+          CARD_WIDTH,
+          CARD_LINE_HEIGHT
+        );
+      }
+
+      if (isDep) {
+        ctx.textAlign = "center";
+      }
+
+      ctx.font = "bold 40px MicrosoftJhengHeiUI";
+      if (cardTemplateInfo.milestone !== undefined && !isDep) {
+        drawWrappedText(
+          ctx,
+          cardData[i].type,
+          cardTemplateInfo.milestone[i].x,
+          cardTemplateInfo.milestone[i].y,
+          CARD_WIDTH,
+          CARD_LINE_HEIGHT
+        );
+      }
+
+      ctx.font = "40px MicrosoftJhengHeiUI";
+      if (cardTemplateInfo.userId !== undefined) {
+        drawWrappedText(
+          ctx,
+          cardData[i].jobNumber,
+          cardTemplateInfo.userId[i].x,
+          cardTemplateInfo.userId[i].y,
+          CARD_WIDTH,
+          CARD_LINE_HEIGHT
+        );
+      }
+
+      ctx.font = "40px MicrosoftJhengHeiUI";
+      if (cardTemplateInfo.name !== undefined) {
+        drawWrappedText(
+          ctx,
+          `${cardData[i].member}`,
+          cardTemplateInfo.name[i].x,
+          cardTemplateInfo.name[i].y,
+          CARD_WIDTH,
+          CARD_LINE_HEIGHT
+        );
+      }
+
+      // Generate avatar
+      const image: any = await loadBgImage(getAvatar(cardData[i].jobNumber));
+      const avatarCanvas = document.createElement("canvas");
+      const avatarCtx = avatarCanvas.getContext("2d");
+      avatarCanvas.width = image.width;
+      avatarCanvas.height = image.height;
+      if (image && avatarCtx && cardTemplateInfo.name !== undefined) {
+        const centerX = avatarCanvas.width / 2;
+        const centerY = avatarCanvas.height / 2;
+        const radius = Math.min(image.width, image.height) / 2;
+
+        avatarCtx.save();
+        avatarCtx.beginPath();
+        avatarCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        avatarCtx.closePath();
+        avatarCtx.clip();
+
+        avatarCtx.drawImage(
+          image,
+          centerX - radius,
+          centerY - radius,
+          radius * 2,
+          radius * 2
+        );
+
+        avatarCtx.restore();
+
+        ctx.drawImage(
+          avatarCanvas,
+          cardTemplateInfo.avatar[i].x,
+          cardTemplateInfo.avatar[i].y,
+          150,
+          150
+        );
+      }
+    }
+
+    let loadcount = 0;
+    for (let i = 0; i < cardData.length; i++) {
+      const qrCodeImage = new Image();
+      qrCodeImage.src = cardData[i].qrcode_img;
+      qrCodeImage.onload = async () => {
+        loadcount++;
+
+        if (cardTemplateInfo.qrCode !== undefined) {
+          ctx.drawImage(
+            qrCodeImage,
+            cardTemplateInfo.qrCode[i].x,
+            cardTemplateInfo.qrCode[i].y,
+            330,
+            330
+          );
+        }
+
+        if (loadcount == cardData.length) {
+          const rotatedCanvas = document.createElement("canvas");
+          const rotatedCtx = rotatedCanvas.getContext("2d");
+
+          if (!rotatedCtx) return;
+
+          rotatedCanvas.width = canvas.height;
+          rotatedCanvas.height = canvas.width;
+
+          rotatedCtx.translate(
+            rotatedCanvas.width / 2,
+            rotatedCanvas.height / 2
+          );
+          rotatedCtx.rotate((270 * Math.PI) / 180);
+          rotatedCtx.drawImage(canvas, -canvas.width / 2, -canvas.height / 2);
+
+          const originalUrl = canvas.toDataURL("image/png");
+          const dataUrl = rotatedCanvas.toDataURL("image/png");
+          resolve([dataUrl, originalUrl]);
+        }
+      };
+    }
+  });
 };

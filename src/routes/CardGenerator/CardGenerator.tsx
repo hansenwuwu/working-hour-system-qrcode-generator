@@ -6,7 +6,6 @@ import { ProjectData, MemberData } from "../../lib/models";
 import { StarterPage } from "./StarterPage";
 import { GeneratorPage } from "./GeneratorPage";
 import { PageType } from "./model";
-import ImportSheetModal from "./ImportSheetModal";
 
 function CardGenerator() {
   const [curPage, setCurPage] = useState<PageType>(PageType.STARTER);
@@ -17,8 +16,6 @@ function CardGenerator() {
   const [cardType, setCardType] = useState<string>("");
 
   const [loadings, setLoadings] = useState<boolean[]>([]);
-
-  const [isImportSheetModalOpen, setIsImportSheetModalOpen] = useState(false);
 
   const enterLoading = (index: number) => {
     setLoadings((prevLoadings) => {
@@ -58,15 +55,6 @@ function CardGenerator() {
             />
           )}
           <h1>ADAT</h1>
-          <Button
-            style={{ position: "absolute", right: "30px" }}
-            icon={<PlusOutlined />}
-            onClick={() => {
-              setIsImportSheetModalOpen(true);
-            }}
-          >
-            Import sheet
-          </Button>
         </div>
         {curPage === PageType.STARTER && (
           <StarterPage
@@ -99,10 +87,6 @@ function CardGenerator() {
           />
         )}
       </div>
-      <ImportSheetModal
-        isModalOpen={isImportSheetModalOpen}
-        setIsModalOpen={setIsImportSheetModalOpen}
-      />
     </>
   );
 }

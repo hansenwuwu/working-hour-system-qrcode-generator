@@ -1,19 +1,24 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Modal, Input } from "antd";
 
 function ImportSheetModal(props: {
   isModalOpen: boolean;
   setIsModalOpen: CallableFunction;
+  importSheet: CallableFunction;
 }) {
   const [loading, setLoading] = useState(false);
-  const [disable, setDisabled] = useState(false);
+  const [sheetId, setSheetId] = useState<string>("");
 
-  const handleOk = () => {
+  useEffect(() => {
+    setSheetId("");
+    setLoading(false);
+  }, [props.isModalOpen]);
+
+  const handleOk = async () => {
     setLoading(true);
-    // setTimeout(() => {
-    //   setLoading(false);
-    //   setOpen(false);
-    // }, 3000);
+    await props.importSheet(sheetId);
+    setLoading(false);
+    props.setIsModalOpen(false);
   };
 
   const handleCancel = () => {
@@ -29,7 +34,6 @@ function ImportSheetModal(props: {
         props.setIsModalOpen(false);
       }}
       onCancel={handleCancel}
-      destroyOnClose={true}
       maskClosable={false}
       okText="Import"
       closable={false}
@@ -58,11 +62,11 @@ function ImportSheetModal(props: {
           marginTop: "20px",
           marginBottom: "10px",
         }}
-        // disabled={props.loadings[1]}
-        // value={props.sheetId}
-        // onChange={(e) => {
-        //   props.setSheetId(e.target.value);
-        // }}
+        disabled={loading}
+        value={sheetId}
+        onChange={(e) => {
+          setSheetId(e.target.value);
+        }}
       />
     </Modal>
   );

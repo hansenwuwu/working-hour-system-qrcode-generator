@@ -4,12 +4,13 @@ import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import CardGenerator from "./routes/CardGenerator/CardGenerator";
+import CardGeneratorV2 from "./routes/CardGenerator/CardGeneratorV2";
 
 const router = createBrowserRouter(
   [
     {
       path: "/",
-      element: <CardGenerator />,
+      element: <CardGeneratorV2 />,
     },
   ],
   { basename: "/working-hour-system-qrcode-generator" }
