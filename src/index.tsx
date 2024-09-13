@@ -5,12 +5,13 @@ import reportWebVitals from "./reportWebVitals";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import CardGenerator from "./routes/CardGenerator/CardGenerator";
 import CardGeneratorV2 from "./routes/CardGenerator/CardGeneratorV2";
+import Redirect from "./routes/Redirect";
 
 const router = createBrowserRouter(
   [
     {
       path: "/",
-      element: <CardGeneratorV2 />,
+      element: <Redirect />,
     },
   ],
   { basename: "/working-hour-system-qrcode-generator" }
