@@ -11,7 +11,7 @@ const router = createBrowserRouter(
   [
     {
       path: "/",
-      element: <CardGeneratorV2 />,
+      element: <Redirect />,
     },
   ],
   { basename: "/working-hour-system-qrcode-generator" }
